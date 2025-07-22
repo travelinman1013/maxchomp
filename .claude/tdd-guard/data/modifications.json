@@ -1,0 +1,10 @@
+{
+  "session_id": "e882162e-31fa-4069-b33e-fe50089acca5",
+  "transcript_path": "/Users/maxwell/.claude/projects/-Users-maxwell-Desktop-LETSGO-AI-Projects-MaxChomp/e882162e-31fa-4069-b33e-fe50089acca5.jsonl",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/Users/maxwell/Desktop/LETSGO/AI Projects/MaxChomp/lib/core/theme/app_theme.dart",
+    "content": "import 'package:flutter/material.dart';\n\nclass AppTheme {\n  static ThemeData lightTheme() {\n    return ThemeData(\n      useMaterial3: true,\n      brightness: Brightness.light,\n    );\n  }\n}"
+  }
+}

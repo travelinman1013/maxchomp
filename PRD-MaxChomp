@@ -1,0 +1,470 @@
+# MaxChomp – Project Requirements Document (PRD)
+
+---
+
+## 1. Project Overview and Purpose
+
+**MaxChomp** is a cross-platform mobile application designed to convert text from PDF files into natural-sounding speech, providing a seamless reading and listening experience. Inspired by leading apps like Speechify, its goal is to make digital content more accessible and convenient for users on iOS, Android, and tablets, leveraging modern Flutter and Material 3 design standards. MaxChomp targets users who want to listen to documents on the go, people with reading difficulties, students, and professionals.
+
+---
+
+## 2. Must-Have Features for Flutter MVP
+
+- **PDF Import & Library Management**
+  - Import PDFs from local storage, cloud platforms (Google Drive, Dropbox, OneDrive), or file pickers.
+  - View a list/grid of all imported documents with progress indication.
+
+- **PDF Text-to-Speech (TTS)**
+  - Extract text from PDFs and play audio using selectable high-quality voices.
+  - Display current text being read with highlighting.
+  - Adjustable playback speed (e.g., 0.5x to 2.0x).
+
+- **Player Controls**
+  - Play, pause, stop TTS.
+  - Sentence/paragraph skip forward and backward.
+  - Progress bar showing reading progress and allowing seeking.
+
+- **Basic User Settings**
+  - Select preferred voice and language.
+  - Adjust default playback speed.
+
+- **Persistent Reading Progress**
+  - Save the user's current position in each document automatically.
+
+- **Accessible UI**
+  - Material 3 theming.
+  - Large touch targets.
+  - VoiceOver/Talkback support for accessibility.
+
+---
+
+## 3. Nice-to-Have Features (Future Iterations)
+
+- **OCR Support**
+  - Convert scanned or image-based PDFs to text for TTS.
+
+- **Voice Customization**
+  - Upload or synthesize custom voices.
+
+- **Advanced Library Features**
+  - Folders/tags for document organization.
+  - Sorting and searching within imported PDFs.
+
+- **Annotation & Highlighting**
+  - User can highlight text and add notes.
+
+- **Cloud Sync**
+  - User library and progress synced across devices via Firebase.
+
+- **Analytics and Usage Reports**
+  - Show how much reading/listening is accomplished.
+
+- **Multilingual Support**
+  - Detect and switch language mid-document.
+
+- **Text Summarization**
+  - AI summarization of PDF content for quick review.
+
+- **Offline Mode**
+  - Download voices for offline TTS.
+  - Use app entirely offline (where feasible).
+
+- **Subscription/Paywall Features**
+  - Premium voices, advanced features unlock via in-app purchase.
+
+---
+
+## 4. Technical Requirements
+
+- **Flutter Frontend**
+  - Use Flutter 3+ with Material 3 components.
+  - Responsive design for mobile and tablet sizes.
+
+- **Backend APIs**
+  - TTS: Integrate with Google Cloud TTS, AWS Polly, or Azure TTS APIs.
+  - (Optional) Use a backend service (Firebase Functions) for user data, AI text processing, or analytics if required.
+
+- **State Management**
+  - Use a robust state management system (e.g., Riverpod, Provider, or Bloc/Cubit) for app-wide state.
+
+- **Firebase Integration**
+  - Authentication (email, Google, Apple sign-in).
+  - Cloud Storage for PDF files (optional).
+  - Firestore for storing user progress and app data.
+  - Analytics for usage tracking.
+  - Remote Config for feature flagging.
+
+---
+
+## 5. User Stories and Target Audience
+
+**Target Audience**
+
+- Students, professionals, visually-impaired users, audiobook fans.
+- Users on iOS, Android smartphones, and tablets.
+
+**Sample User Stories**
+
+- *As a commuter,* I want to listen to my PDF documents while on the move so I can maximize productivity.
+- *As a student,* I want to highlight important sections and have them read aloud to aid learning.
+- *As a visually-impaired user,* I need a simple interface to have documents read aloud using high-contrast themes.
+- *As a busy professional,* I want the app to remember my progress in each document so I can resume anytime.
+
+---
+
+## 6. UI/UX Requirements (Material 3 Design)
+
+- **Material 3 Theming**
+  - Use color schemes, typography, and components from Material 3.
+  - System-wide dark and light mode support.
+  - Dynamic color theming for branded look.
+
+- **Essential UI Components**
+  - App bar with app name, navigation.
+  - Bottom navigation bar for Library, Player, Settings.
+  - Floating action button for adding/importing PDFs.
+  - List/grid view for library.
+  - PDF player page with waveform/progress, controls, playback speed, and current text cue highlighting.
+
+- **User Experience**
+  - Smooth transitions, animated feedback, minimal load times.
+  - Visual indicator for read progress in both library and document view.
+  - Intuitive onboarding for first-time users.
+
+---
+
+## 7. Platform-Specific Requirements
+
+- **iOS**
+  - Support for Apple Sign-In.
+  - VoiceOver accessibility standards.
+  - Comply with Apple’s PDF and in-app purchase APIs.
+  - Haptic feedback where possible.
+
+- **Android**
+  - Support for Google Sign-In.
+  - Respect Android's file picker and storage permissions.
+  - Compatible with TalkBack accessibility.
+  - Adhere to Android backward navigation patterns.
+
+- **Tablet Optimizations**
+  - Responsive layouts with two-pane UI where possible.
+  - Support landscape and split-screen modes.
+
+---
+
+## 8. Success Metrics and Constraints
+
+- **Success Metrics**
+  - # of active users (DAU/MAU).
+  - Average PDF listens per user per week.
+  - Average app session length.
+  - User retention and churn rates.
+  - App store ratings and reviews (target 4.5+).
+
+- **Constraints**
+  - App size <100MB where possible.
+  - Initial MVP TTS limited to online/cloud for quality/language breadth.
+  - Ensure GDPR and data privacy compliance.
+  - Support for minimum OS: Android 8.0+, iOS 13+.
+
+---
+
+## 9. Material 3 Theming and Component Requirements
+
+- **Color Schemes**
+  - Primary, secondary, background, and error colors customizable by user/system theme.
+
+- **Typography**
+  - Use Material 3’s typography styles for headers, subheaders, body text.
+
+- **Shape & Elevation**
+  - Rounded corners, subtle elevation consistent with Material 3.
+
+- **Core Widgets**
+  - AppBar, NavBar, ListTile, FloatingActionButton, Slider, Dialogs, Snackbars, Cards.
+
+---
+
+## 10. Flutter Testing Strategy
+
+- **Unit Tests**
+  - Core logic: PDF parsing, TTS invocation, state changes.
+
+- **Widget Tests**
+  - Library view, player controls, settings forms.
+
+- **Integration Tests**
+  - File import to playback flow.
+  - Authentication and onboarding.
+  - State persistence, user progress, and preferences sync.
+
+- **Continuous Integration**
+  - Automated build, test, and deployment pipeline.
+
+---
+
+## 11. Performance & Offline Considerations
+
+- Optimize PDF parsing and text extraction for large files.
+- Efficient caching of recently used PDFs and audio progress.
+- Provide feedback if TTS requires connectivity; allow offline playback for downloaded voices (future).
+- Manage background processing carefully to avoid battery drain.
+- Minimal latency on play/pause/seek in audio playback.
+
+---
+
+## 12. App Store Deployment Requirements
+
+- **App Store (Apple)**
+  - Pass accessibility and privacy guidelines.
+  - App Tracking Transparency if analytics/ads used.
+  - In-app purchase (IAP) for premium features.
+
+- **Google Play Store**
+  - Comply with Google accessibility, privacy, and permission requirements.
+  - Implement Google Play Billing for IAP.
+  - Localized store listings, screenshots, and preview videos.
+
+- **General**
+  - Submit under clear accessibility and productivity categories.
+  - Privacy policy and terms of service included.
+
+---
+
+This PRD outlines a robust foundation for building MaxChomp, focusing on a high-quality Flutter MVP with Material 3 best practices, scalability, and accessibility at its core.
+# MaxChomp – Project Requirements Document (PRD)
+
+---
+
+## 1. Project Overview and Purpose
+
+**MaxChomp** is a cross-platform mobile application designed to convert text from PDF files into natural-sounding speech, providing a seamless reading and listening experience. Inspired by leading apps like Speechify, its goal is to make digital content more accessible and convenient for users on iOS, Android, and tablets, leveraging modern Flutter and Material 3 design standards. MaxChomp targets users who want to listen to documents on the go, people with reading difficulties, students, and professionals.
+
+---
+
+## 2. Must-Have Features for Flutter MVP
+
+- **PDF Import & Library Management**
+  - Import PDFs from local storage, cloud platforms (Google Drive, Dropbox, OneDrive), or file pickers.
+  - View a list/grid of all imported documents with progress indication.
+
+- **PDF Text-to-Speech (TTS)**
+  - Extract text from PDFs and play audio using selectable high-quality voices.
+  - Display current text being read with highlighting.
+  - Adjustable playback speed (e.g., 0.5x to 2.0x).
+
+- **Player Controls**
+  - Play, pause, stop TTS.
+  - Sentence/paragraph skip forward and backward.
+  - Progress bar showing reading progress and allowing seeking.
+
+- **Basic User Settings**
+  - Select preferred voice and language.
+  - Adjust default playback speed.
+
+- **Persistent Reading Progress**
+  - Save the user's current position in each document automatically.
+
+- **Accessible UI**
+  - Material 3 theming.
+  - Large touch targets.
+  - VoiceOver/Talkback support for accessibility.
+
+---
+
+## 3. Nice-to-Have Features (Future Iterations)
+
+- **OCR Support**
+  - Convert scanned or image-based PDFs to text for TTS.
+
+- **Voice Customization**
+  - Upload or synthesize custom voices.
+
+- **Advanced Library Features**
+  - Folders/tags for document organization.
+  - Sorting and searching within imported PDFs.
+
+- **Annotation & Highlighting**
+  - User can highlight text and add notes.
+
+- **Cloud Sync**
+  - User library and progress synced across devices via Firebase.
+
+- **Analytics and Usage Reports**
+  - Show how much reading/listening is accomplished.
+
+- **Multilingual Support**
+  - Detect and switch language mid-document.
+
+- **Text Summarization**
+  - AI summarization of PDF content for quick review.
+
+- **Offline Mode**
+  - Download voices for offline TTS.
+  - Use app entirely offline (where feasible).
+
+- **Subscription/Paywall Features**
+  - Premium voices, advanced features unlock via in-app purchase.
+
+---
+
+## 4. Technical Requirements
+
+- **Flutter Frontend**
+  - Use Flutter 3+ with Material 3 components.
+  - Responsive design for mobile and tablet sizes.
+
+- **Backend APIs**
+  - TTS: Integrate with Google Cloud TTS, AWS Polly, or Azure TTS APIs.
+  - (Optional) Use a backend service (Firebase Functions) for user data, AI text processing, or analytics if required.
+
+- **State Management**
+  - Use a robust state management system (e.g., Riverpod, Provider, or Bloc/Cubit) for app-wide state.
+
+- **Firebase Integration**
+  - Authentication (email, Google, Apple sign-in).
+  - Cloud Storage for PDF files (optional).
+  - Firestore for storing user progress and app data.
+  - Analytics for usage tracking.
+  - Remote Config for feature flagging.
+
+---
+
+## 5. User Stories and Target Audience
+
+**Target Audience**
+
+- Students, professionals, visually-impaired users, audiobook fans.
+- Users on iOS, Android smartphones, and tablets.
+
+**Sample User Stories**
+
+- *As a commuter,* I want to listen to my PDF documents while on the move so I can maximize productivity.
+- *As a student,* I want to highlight important sections and have them read aloud to aid learning.
+- *As a visually-impaired user,* I need a simple interface to have documents read aloud using high-contrast themes.
+- *As a busy professional,* I want the app to remember my progress in each document so I can resume anytime.
+
+---
+
+## 6. UI/UX Requirements (Material 3 Design)
+
+- **Material 3 Theming**
+  - Use color schemes, typography, and components from Material 3.
+  - System-wide dark and light mode support.
+  - Dynamic color theming for branded look.
+
+- **Essential UI Components**
+  - App bar with app name, navigation.
+  - Bottom navigation bar for Library, Player, Settings.
+  - Floating action button for adding/importing PDFs.
+  - List/grid view for library.
+  - PDF player page with waveform/progress, controls, playback speed, and current text cue highlighting.
+
+- **User Experience**
+  - Smooth transitions, animated feedback, minimal load times.
+  - Visual indicator for read progress in both library and document view.
+  - Intuitive onboarding for first-time users.
+
+---
+
+## 7. Platform-Specific Requirements
+
+- **iOS**
+  - Support for Apple Sign-In.
+  - VoiceOver accessibility standards.
+  - Comply with Apple’s PDF and in-app purchase APIs.
+  - Haptic feedback where possible.
+
+- **Android**
+  - Support for Google Sign-In.
+  - Respect Android's file picker and storage permissions.
+  - Compatible with TalkBack accessibility.
+  - Adhere to Android backward navigation patterns.
+
+- **Tablet Optimizations**
+  - Responsive layouts with two-pane UI where possible.
+  - Support landscape and split-screen modes.
+
+---
+
+## 8. Success Metrics and Constraints
+
+- **Success Metrics**
+  - # of active users (DAU/MAU).
+  - Average PDF listens per user per week.
+  - Average app session length.
+  - User retention and churn rates.
+  - App store ratings and reviews (target 4.5+).
+
+- **Constraints**
+  - App size <100MB where possible.
+  - Initial MVP TTS limited to online/cloud for quality/language breadth.
+  - Ensure GDPR and data privacy compliance.
+  - Support for minimum OS: Android 8.0+, iOS 13+.
+
+---
+
+## 9. Material 3 Theming and Component Requirements
+
+- **Color Schemes**
+  - Primary, secondary, background, and error colors customizable by user/system theme.
+
+- **Typography**
+  - Use Material 3’s typography styles for headers, subheaders, body text.
+
+- **Shape & Elevation**
+  - Rounded corners, subtle elevation consistent with Material 3.
+
+- **Core Widgets**
+  - AppBar, NavBar, ListTile, FloatingActionButton, Slider, Dialogs, Snackbars, Cards.
+
+---
+
+## 10. Flutter Testing Strategy
+
+- **Unit Tests**
+  - Core logic: PDF parsing, TTS invocation, state changes.
+
+- **Widget Tests**
+  - Library view, player controls, settings forms.
+
+- **Integration Tests**
+  - File import to playback flow.
+  - Authentication and onboarding.
+  - State persistence, user progress, and preferences sync.
+
+- **Continuous Integration**
+  - Automated build, test, and deployment pipeline.
+
+---
+
+## 11. Performance & Offline Considerations
+
+- Optimize PDF parsing and text extraction for large files.
+- Efficient caching of recently used PDFs and audio progress.
+- Provide feedback if TTS requires connectivity; allow offline playback for downloaded voices (future).
+- Manage background processing carefully to avoid battery drain.
+- Minimal latency on play/pause/seek in audio playback.
+
+---
+
+## 12. App Store Deployment Requirements
+
+- **App Store (Apple)**
+  - Pass accessibility and privacy guidelines.
+  - App Tracking Transparency if analytics/ads used.
+  - In-app purchase (IAP) for premium features.
+
+- **Google Play Store**
+  - Comply with Google accessibility, privacy, and permission requirements.
+  - Implement Google Play Billing for IAP.
+  - Localized store listings, screenshots, and preview videos.
+
+- **General**
+  - Submit under clear accessibility and productivity categories.
+  - Privacy policy and terms of service included.
+
+---
+
+This PRD outlines a robust foundation for building MaxChomp, focusing on a high-quality Flutter MVP with Material 3 best practices, scalability, and accessibility at its core.
