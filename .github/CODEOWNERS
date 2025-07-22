@@ -1,0 +1,39 @@
+# CODEOWNERS for MaxChomp
+# These owners will be automatically requested for review when PRs are opened
+
+# Global ownership
+* @travelinman1013
+
+# Core architecture and development guidelines
+claude.md @travelinman1013
+claude-ui.md @travelinman1013
+implementation_plan.md @travelinman1013
+session_history.md @travelinman1013
+
+# Flutter core architecture
+lib/core/ @travelinman1013
+test/core/ @travelinman1013
+
+# State management (Riverpod providers)
+lib/core/providers/ @travelinman1013
+test/core/providers/ @travelinman1013
+
+# Authentication system
+lib/core/services/firebase_service.dart @travelinman1013
+lib/pages/auth/ @travelinman1013
+test/pages/auth/ @travelinman1013
+
+# PDF processing system
+lib/core/services/pdf_import_service.dart @travelinman1013
+lib/core/models/pdf_document.dart @travelinman1013
+test/core/models/pdf_document_test.dart @travelinman1013
+test/core/services/pdf_import_service_test.dart @travelinman1013
+
+# Project configuration
+pubspec.yaml @travelinman1013
+analysis_options.yaml @travelinman1013
+
+# Documentation
+README.md @travelinman1013
+LICENSE @travelinman1013
+*.md @travelinman1013
