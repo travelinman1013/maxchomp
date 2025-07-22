@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'package:maxchomp/core/services/pdf_import_service.dart';
 import 'package:maxchomp/core/models/pdf_document.dart';
@@ -23,14 +22,10 @@ import 'pdf_import_service_test.mocks.dart';
 
 void main() {
   group('PDFImportService', () {
-    late PDFImportService importService;
     late MockFile mockFile;
-    late MockDirectory mockDirectory;
 
     setUp(() {
-      importService = PDFImportService();
       mockFile = MockFile();
-      mockDirectory = MockDirectory();
     });
 
     group('PDF Validation', () {
@@ -113,7 +108,7 @@ void main() {
       test('should return minimum 1 page for invalid content', () {
         const invalidContent = 'invalid pdf content';
         final pageMatches = RegExp(r'/Type\s*/Page\b').allMatches(invalidContent);
-        final pageCount = pageMatches.length > 0 ? pageMatches.length : 1;
+        final pageCount = pageMatches.isNotEmpty ? pageMatches.length : 1;
         expect(pageCount, equals(1));
       });
     });

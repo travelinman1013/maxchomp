@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:maxchomp/pages/auth/sign_in_page.dart';
-import 'package:maxchomp/core/models/auth_state.dart';
 import 'package:maxchomp/core/providers/auth_provider.dart';
 import 'dart:async';
 

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maxchomp/core/models/tts_state.dart';
 import 'package:maxchomp/core/models/tts_models.dart';
-import 'package:maxchomp/core/models/voice_model.dart';
 import 'package:maxchomp/core/providers/tts_provider.dart';
 import 'package:maxchomp/core/services/tts_service.dart';
 import 'package:maxchomp/widgets/player/audio_player_widget.dart';

@@ -5,7 +5,6 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 import 'package:maxchomp/core/services/tts_service.dart';
 import 'package:maxchomp/core/models/tts_state.dart';
-import 'package:maxchomp/core/models/voice_model.dart';
 
 import 'tts_service_test.mocks.dart';
 

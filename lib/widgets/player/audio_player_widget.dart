@@ -1,25 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/models/pdf_document.dart';
 import '../../core/models/tts_state.dart';
 import '../../core/models/tts_models.dart';
 import '../../core/providers/tts_provider.dart';
+import '../../core/providers/audio_playback_provider.dart';
 
 /// Material 3 audio player widget for MaxChomp TTS playback
 /// 
 /// Provides play/pause/stop controls, progress display, and speed adjustment
 /// following Material Design 3 specifications and accessibility guidelines.
 class AudioPlayerWidget extends ConsumerWidget {
-  const AudioPlayerWidget({super.key});
+  final PDFDocument? document;
+  final String? text;
+  final String? sourceId;
+  
+  const AudioPlayerWidget({
+    super.key,
+    this.document,
+    this.text,
+    this.sourceId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ttsState = ref.watch(ttsStateNotifierProvider);
     final ttsProgress = ref.watch(ttsProgressNotifierProvider);
     final ttsSettings = ref.watch(ttsSettingsNotifierProvider);
+    final audioPlaybackState = ref.watch(audioPlaybackNotifierProvider);
 
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Card(
       elevation: 1.0, // Material 3 subtle elevation
@@ -29,9 +40,15 @@ class AudioPlayerWidget extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Loading indicator
+            if (audioPlaybackState.isLoading) ...[
+              const LinearProgressIndicator(),
+              const SizedBox(height: 16.0),
+            ],
+            
             // Error state display
-            if (ttsState.status == TTSState.error) ...[
-              _buildErrorState(context, ttsState.error),
+            if (ttsState.status == TTSState.error || audioPlaybackState.error != null) ...[
+              _buildErrorState(context, audioPlaybackState.error ?? ttsState.error),
               const SizedBox(height: 16.0),
             ],
 
@@ -216,21 +233,40 @@ class AudioPlayerWidget extends ConsumerWidget {
     );
   }
 
-  void _handlePlayPause(WidgetRef ref, bool isPlaying) {
-    final notifier = ref.read(ttsStateNotifierProvider.notifier);
+  void _handlePlayPause(WidgetRef ref, bool isPlaying) async {
+    final audioNotifier = ref.read(audioPlaybackNotifierProvider.notifier);
+    final ttsNotifier = ref.read(ttsStateNotifierProvider.notifier);
+    
+    // Ensure TTS is initialized
+    if (!ref.read(ttsStateNotifierProvider).isInitialized) {
+      await ttsNotifier.initialize();
+    }
+    
     if (isPlaying) {
-      // TODO: Implement pause functionality
-      // notifier.pause();
+      // Pause the current playback
+      await audioNotifier.pause();
     } else {
-      // TODO: Implement play/resume functionality  
-      // notifier.speak('Sample text');
+      // Start new playback or resume
+      if (document != null) {
+        await audioNotifier.playPDF(document!);
+      } else if (text != null) {
+        await audioNotifier.playText(text!, sourceId: sourceId);
+      } else {
+        // Check if there's already content to resume
+        final audioState = ref.read(audioPlaybackNotifierProvider);
+        if (audioState.hasContent && audioState.isPaused) {
+          await audioNotifier.resume();
+        } else {
+          // For testing purposes, play sample text
+          await audioNotifier.playText('This is a sample text for TTS playback.', sourceId: 'sample');
+        }
+      }
     }
   }
 
-  void _handleStop(WidgetRef ref) {
-    final notifier = ref.read(ttsStateNotifierProvider.notifier);
-    // TODO: Implement stop functionality
-    // notifier.stop();
+  void _handleStop(WidgetRef ref) async {
+    final audioNotifier = ref.read(audioPlaybackNotifierProvider.notifier);
+    await audioNotifier.stop();
   }
 
   void _showSpeedDialog(BuildContext context, WidgetRef ref, TTSSettingsModel settings) {
@@ -241,8 +277,7 @@ class AudioPlayerWidget extends ConsumerWidget {
           currentSpeed: settings.speechRate,
           onSpeedChanged: (double newSpeed) {
             final notifier = ref.read(ttsSettingsNotifierProvider.notifier);
-            // TODO: Implement speed change functionality
-            // notifier.updateSpeechRate(newSpeed);
+            notifier.updateSpeechRate(newSpeed);
             Navigator.of(context).pop();
           },
         );
@@ -289,7 +324,7 @@ class _SpeedSelectionSheetState extends State<_SpeedSelectionSheet> {
             height: 4,
             margin: const EdgeInsets.only(bottom: 16.0),
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2.0),
             ),
           ),

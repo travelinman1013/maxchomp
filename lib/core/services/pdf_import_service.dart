@@ -4,8 +4,6 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -60,7 +58,7 @@ class PDFImportService {
           }
         } catch (e) {
           // Continue processing other files even if one fails
-          print('Failed to process ${platformFile.name}: $e');
+          // Failed to process file, continuing with others
         }
       }
 
@@ -154,7 +152,7 @@ class PDFImportService {
   Future<_PDFInfo> _extractPDFInfo(File pdfFile) async {
     try {
       final bytes = await pdfFile.readAsBytes();
-      final pdf = pw.Document();
+      // Extract PDF information using page counting
       
       // For now, we'll do basic page counting
       // In a real implementation, you might use a more robust PDF parsing library

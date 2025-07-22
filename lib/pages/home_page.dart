@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maxchomp/core/providers/auth_provider.dart';
 import 'package:maxchomp/pages/library_page.dart';
+import 'package:maxchomp/pages/player_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -44,7 +45,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         index: _selectedIndex,
         children: [
           const LibraryPage(),
-          const Center(child: Text('Player')),
+          const PlayerPage(),
           _buildSettingsPage(),
         ],
       ),

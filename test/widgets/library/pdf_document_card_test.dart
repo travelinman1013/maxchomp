@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:maxchomp/widgets/library/pdf_document_card.dart';
 import 'package:maxchomp/core/models/pdf_document.dart';
@@ -117,7 +116,7 @@ void main() {
         await tester.pumpWidget(createTestWidget(document: readyDocument));
         
         // Should have green/success indicator for ready status
-        final theme = Theme.of(tester.element(find.byType(Card)));
+        // Test status display
         // We'll verify this through the presence of status indicator
         expect(find.byType(Icon), findsWidgets); // PDF icon and status indicator
       });
@@ -238,9 +237,10 @@ void main() {
       testWidgets('should use correct Material 3 colors', (tester) async {
         await tester.pumpWidget(createTestWidget());
         
-        final theme = Theme.of(tester.element(find.byType(Card)));
+        // Test status display
         // Card should use surface color from theme
         final card = tester.widget<Card>(find.byType(Card));
+        final theme = AppTheme.lightTheme();
         expect(card.color, anyOf(isNull, equals(theme.colorScheme.surface)));
       });
 

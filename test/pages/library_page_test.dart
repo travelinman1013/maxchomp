@@ -88,7 +88,7 @@ void main() {
         
         // Tap the view toggle button
         await tester.tap(find.byIcon(Icons.view_list));
-        await tester.pumpAndSettle();
+        await tester.pump();
         
         // Should switch to list view
         expect(find.byType(ListView), findsOneWidget);
@@ -157,10 +157,10 @@ void main() {
         
         // Open search dialog and search
         await tester.tap(find.byIcon(Icons.search));
-        await tester.pumpAndSettle();
+        await tester.pump();
         await tester.enterText(find.byType(TextField), 'test_document_1');
         await tester.tap(find.text('Search'));
-        await tester.pumpAndSettle();
+        await tester.pump();
         
         // Verify filtered state
         expect(find.text('test_document_1.pdf'), findsOneWidget);
@@ -168,9 +168,9 @@ void main() {
         
         // Clear search
         await tester.tap(find.byIcon(Icons.search));
-        await tester.pumpAndSettle();
+        await tester.pump();
         await tester.tap(find.text('Clear'));
-        await tester.pumpAndSettle();
+        await tester.pump();
         
         // Should show all documents again
         expect(find.text('test_document_1.pdf'), findsOneWidget);

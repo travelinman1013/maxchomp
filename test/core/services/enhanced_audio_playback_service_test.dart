@@ -9,7 +9,6 @@ import 'package:maxchomp/core/models/pdf_document.dart';
 import 'package:maxchomp/core/models/text_extraction_result.dart';
 import 'package:maxchomp/core/models/audio_playback_state_model.dart';
 import 'package:maxchomp/core/models/tts_state.dart';
-import 'dart:io';
 
 import 'enhanced_audio_playback_service_test.mocks.dart';
 

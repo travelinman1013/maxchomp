@@ -131,7 +131,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
           .toList();
       await prefs.setStringList(_storageKey, documentsJson);
     } catch (e) {
-      print('Failed to save documents: $e');
+      // Failed to save documents to storage
     }
   }
 
@@ -169,7 +169,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
         await document.file.delete();
       }
     } catch (e) {
-      print('Failed to delete file: $e');
+      // Failed to delete physical file
     }
 
     // Remove from state

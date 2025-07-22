@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maxchomp/core/services/firebase_service.dart';
 import 'package:maxchomp/core/theme/app_theme.dart';
 import 'package:maxchomp/core/widgets/auth_wrapper.dart';
+import 'package:maxchomp/core/widgets/app_initializer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,11 +21,13 @@ class MaxChompApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MaxChomp',
-      theme: AppTheme.lightTheme(),
-      darkTheme: AppTheme.darkTheme(),
-      home: const AuthWrapper(),
+    return AppInitializer(
+      child: MaterialApp(
+        title: 'MaxChomp',
+        theme: AppTheme.lightTheme(),
+        darkTheme: AppTheme.darkTheme(),
+        home: const AuthWrapper(),
+      ),
     );
   }
 }

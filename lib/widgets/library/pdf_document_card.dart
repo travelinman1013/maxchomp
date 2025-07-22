@@ -225,18 +225,25 @@ class PDFDocumentCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
-              'Progress',
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+            Flexible(
+              child: Text(
+                'Progress',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Spacer(),
-            Text(
-              document.displayProgress,
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
+            const SizedBox(width: AppTheme.spaceXS),
+            Flexible(
+              child: Text(
+                document.displayProgress,
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
               ),
             ),
           ],
@@ -266,7 +273,7 @@ class PDFDocumentCard extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.symmetric(vertical: AppTheme.spaceMD),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
