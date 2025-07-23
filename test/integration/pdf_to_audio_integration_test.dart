@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +25,7 @@ void main() {
     late AudioPlaybackService audioPlaybackService;
     late ProviderContainer container;
     late PDFDocument testDocument;
+    late StreamController<TTSState> stateController;
 
     setUp(() {
       mockTTSService = MockTTSService();
@@ -40,15 +42,30 @@ void main() {
         totalPages: 5,
       );
 
-      // Setup mock TTS service
-      when(mockTTSService.stateStream).thenAnswer((_) => Stream<TTSState>.empty());
+      // Setup realistic mock TTS service with state changes and stream
+      var currentState = TTSState.stopped;
+      stateController = StreamController<TTSState>.broadcast();
+      
+      when(mockTTSService.stateStream).thenAnswer((_) => stateController.stream);
       when(mockTTSService.progressStream).thenAnswer((_) => Stream<String>.empty());
-      when(mockTTSService.currentState).thenReturn(TTSState.stopped);
+      when(mockTTSService.currentState).thenAnswer((_) => currentState);
       when(mockTTSService.isInitialized).thenReturn(true);
       when(mockTTSService.initialize()).thenAnswer((_) async => true);
-      when(mockTTSService.speak(any)).thenAnswer((_) async => true);
-      when(mockTTSService.pause()).thenAnswer((_) async => true);
-      when(mockTTSService.stop()).thenAnswer((_) async => true);
+      when(mockTTSService.speak(any)).thenAnswer((_) async {
+        currentState = TTSState.playing;
+        stateController.add(TTSState.playing);
+        return true;
+      });
+      when(mockTTSService.pause()).thenAnswer((_) async {
+        currentState = TTSState.paused;
+        stateController.add(TTSState.paused);
+        return true;
+      });
+      when(mockTTSService.stop()).thenAnswer((_) async {
+        currentState = TTSState.stopped;
+        stateController.add(TTSState.stopped);
+        return true;
+      });
       when(mockTTSService.dispose()).thenAnswer((_) async {});
       
       // Setup default TTS properties
@@ -79,7 +96,8 @@ void main() {
     });
 
     tearDown(() {
-      container.dispose();
+      container.dispose();  
+      stateController.close();
     });
 
     testWidgets('should complete full PDF to audio pipeline successfully', (tester) async {
@@ -266,14 +284,10 @@ void main() {
       await tester.tap(find.byIcon(Icons.play_arrow));
       await tester.pumpAndSettle();
 
-      // Act & Assert - Test pause
+      // Act & Assert - Test pause  
       expect(container.read(audioPlaybackNotifierProvider).isPlaying, isTrue);
       
-      // Simulate TTS state change to playing for UI update
-      when(mockTTSService.currentState).thenReturn(TTSState.playing);
-      await tester.pumpAndSettle();
-      
-      // Find and tap pause button
+      // Find and tap pause button - should be available since TTS is now playing
       final pauseButton = find.byIcon(Icons.pause);
       expect(pauseButton, findsOneWidget);
       
@@ -283,7 +297,7 @@ void main() {
       // Verify pause was called
       verify(mockTTSService.pause()).called(1);
       
-      // Test resume by tapping play again
+      // Test resume by tapping play again  
       await tester.tap(find.byIcon(Icons.play_arrow));
       await tester.pumpAndSettle();
 
@@ -324,11 +338,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.play_arrow));
       await tester.pumpAndSettle();
 
-      // Simulate playing state for stop button to be enabled
-      when(mockTTSService.currentState).thenReturn(TTSState.playing);
-      await tester.pumpAndSettle();
-
-      // Act - Tap stop button
+      // Act - Tap stop button (should be enabled since TTS is playing)
       final stopButton = find.byIcon(Icons.stop);
       expect(stopButton, findsOneWidget);
       
