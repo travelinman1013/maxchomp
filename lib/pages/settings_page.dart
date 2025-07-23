@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/providers/settings_provider.dart';
+import '../core/providers/user_profiles_provider.dart';
 import '../core/models/settings_model.dart';
+import '../core/widgets/settings_backup_dialogs.dart';
 
 /// Material 3 Settings Page for MaxChomp
 /// 
@@ -74,6 +76,30 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               _buildBackgroundPlaybackToggle(context, settings),
               _buildHapticFeedbackToggle(context, settings),
               _buildVoicePreviewToggle(context, settings),
+            ],
+          ),
+          
+          const SizedBox(height: 16.0),
+          
+          // User Profiles Section
+          _buildSectionCard(
+            context,
+            'User Profiles',
+            [
+              _buildProfileSelection(context),
+              _buildProfileManagement(context),
+            ],
+          ),
+          
+          const SizedBox(height: 16.0),
+          
+          // Data & Backup Section
+          _buildSectionCard(
+            context,
+            'Data & Backup',
+            [
+              _buildExportSettings(context),
+              _buildImportSettings(context),
             ],
           ),
           
@@ -306,6 +332,36 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
+  Widget _buildExportSettings(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return ListTile(
+      title: const Text('Export Settings'),
+      subtitle: const Text('Save settings to backup file'),
+      leading: Icon(
+        Icons.backup,
+        color: theme.colorScheme.primary,
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16.0),
+      onTap: () => SettingsBackupDialogs.showExportDialog(context, ref),
+    );
+  }
+
+  Widget _buildImportSettings(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return ListTile(
+      title: const Text('Import Settings'),
+      subtitle: const Text('Restore settings from backup file'),
+      leading: Icon(
+        Icons.restore,
+        color: theme.colorScheme.secondary,
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16.0),
+      onTap: () => SettingsBackupDialogs.showImportDialog(context, ref),
+    );
+  }
+
   Widget _buildResetSettings(BuildContext context) {
     final theme = Theme.of(context);
     
@@ -354,6 +410,121 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             child: const Text('Reset'),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Build profile selection dropdown following Material 3 patterns
+  Widget _buildProfileSelection(BuildContext context) {
+    final theme = Theme.of(context);
+    final profilesState = ref.watch(userProfilesProvider);
+    final activeProfile = profilesState.activeProfile;
+    
+    return ListTile(
+      leading: Icon(
+        Icons.account_circle,
+        color: theme.colorScheme.primary,
+      ),
+      title: const Text('Active Profile'),
+      subtitle: Text(
+        activeProfile?.name ?? 'Default Profile',
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurface,
+        ),
+      ),
+      trailing: profilesState.profiles.length > 1
+          ? DropdownButton<String>(
+              value: activeProfile?.id ?? profilesState.profiles.first.id,
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: theme.colorScheme.primary,
+              ),
+              underline: Container(),
+              items: profilesState.profiles.map((profile) {
+                return DropdownMenuItem<String>(
+                  value: profile.id,
+                  child: Text(
+                    profile.name,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                );
+              }).toList(),
+              onChanged: (profileId) {
+                if (profileId != null) {
+                  ref.read(userProfilesProvider.notifier).setActiveProfile(profileId);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Switched to ${profilesState.profiles.firstWhere((p) => p.id == profileId).name}'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+            )
+          : Icon(
+              Icons.chevron_right,
+              color: theme.colorScheme.outline,
+            ),
+      onTap: profilesState.profiles.length <= 1
+          ? () => _showCreateProfileDialog(context)
+          : null,
+    );
+  }
+
+  /// Build profile management actions following Material 3 patterns
+  Widget _buildProfileManagement(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(
+            Icons.add_circle_outline,
+            color: theme.colorScheme.primary,
+          ),
+          title: const Text('Create New Profile'),
+          subtitle: const Text('Set up custom TTS preferences'),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: theme.colorScheme.outline,
+          ),
+          onTap: () => _showCreateProfileDialog(context),
+        ),
+        ListTile(
+          leading: Icon(
+            Icons.edit_outlined,
+            color: theme.colorScheme.primary,
+          ),
+          title: const Text('Manage Profiles'),
+          subtitle: const Text('Edit or delete existing profiles'),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: theme.colorScheme.outline,
+          ),
+          onTap: () => _showManageProfilesDialog(context),
+        ),
+      ],
+    );
+  }
+
+  /// Show create profile dialog with Material 3 design
+  void _showCreateProfileDialog(BuildContext context) {
+    // TODO: Implement create profile dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Create profile dialog - Coming soon!'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// Show manage profiles dialog with Material 3 design
+  void _showManageProfilesDialog(BuildContext context) {
+    // TODO: Implement manage profiles dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Manage profiles dialog - Coming soon!'),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

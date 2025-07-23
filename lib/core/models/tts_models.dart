@@ -136,6 +136,30 @@ class TTSSettingsModel {
         selectedVoice.hashCode;
   }
   
+  /// Converts TTSSettingsModel to JSON for serialization
+  Map<String, dynamic> toJson() {
+    return {
+      'speechRate': speechRate,
+      'volume': volume,
+      'pitch': pitch,
+      'language': language,
+      'selectedVoice': selectedVoice?.toMap(),
+    };
+  }
+  
+  /// Creates TTSSettingsModel from JSON for deserialization
+  factory TTSSettingsModel.fromJson(Map<String, dynamic> json) {
+    return TTSSettingsModel(
+      speechRate: (json['speechRate'] as num?)?.toDouble() ?? 1.0,
+      volume: (json['volume'] as num?)?.toDouble() ?? 1.0,
+      pitch: (json['pitch'] as num?)?.toDouble() ?? 1.0,
+      language: json['language'] as String? ?? 'en-US',
+      selectedVoice: json['selectedVoice'] != null
+          ? VoiceModel.fromMap(json['selectedVoice'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
   @override
   String toString() {
     return 'TTSSettingsModel(speechRate: $speechRate, volume: $volume, pitch: $pitch, language: $language, selectedVoice: $selectedVoice)';
