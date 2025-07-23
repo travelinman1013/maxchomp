@@ -104,7 +104,10 @@ void main() {
         expect(find.text('Your library is empty'), findsOneWidget);
         expect(find.text('Import your first PDF to get started'), findsOneWidget);
         expect(find.byIcon(Icons.library_books_outlined), findsOneWidget);
-        expect(find.text('Import PDF'), findsOneWidget);
+        // Should find Import PDF text in both empty state and floating action button
+        expect(find.text('Import PDF'), findsNWidgets(2));
+        // Verify FloatingActionButton specifically
+        expect(find.byType(FloatingActionButton), findsOneWidget);
       });
 
       testWidgets('should display no results message when search has no matches', (tester) async {
@@ -112,12 +115,12 @@ void main() {
         
         // Open search dialog
         await tester.tap(find.byIcon(Icons.search));
-        await tester.pumpAndSettle();
+        await tester.pump();
         
         // Search for non-existent document
         await tester.enterText(find.byType(TextField), 'nonexistent.pdf');
         await tester.tap(find.text('Search'));
-        await tester.pumpAndSettle();
+        await tester.pump();
         
         expect(find.text('No documents found'), findsOneWidget);
         expect(find.text('Try adjusting your search terms'), findsOneWidget);
@@ -129,7 +132,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         
         await tester.tap(find.byIcon(Icons.search));
-        await tester.pumpAndSettle();
+        await tester.pump();
         
         expect(find.text('Search Library'), findsOneWidget);
         expect(find.byType(TextField), findsOneWidget);
@@ -140,12 +143,12 @@ void main() {
         
         // Open search dialog
         await tester.tap(find.byIcon(Icons.search));
-        await tester.pumpAndSettle();
+        await tester.pump();
         
         // Search for specific document
         await tester.enterText(find.byType(TextField), 'test_document_1');
         await tester.tap(find.text('Search'));
-        await tester.pumpAndSettle();
+        await tester.pump();
         
         // Should only show matching document
         expect(find.text('test_document_1.pdf'), findsOneWidget);
