@@ -109,16 +109,15 @@ void main() {
       
       await tester.pumpWidget(createSignInPage());
 
-      // Scroll to make sure the sign-up button is visible
-      await tester.scrollUntilVisible(
-        find.text('Sign Up'),
-        500,
-        scrollable: find.byType(Scrollable),
-      );
+      // Use ensureVisible instead of scrollUntilVisible to avoid the "Too many elements" issue
+      final signUpButtonText = find.text('Sign Up');
+      await tester.ensureVisible(signUpButtonText);
+
+      // Wait for any animations
+      await tester.pumpAndSettle();
 
       // Find and tap the sign-up button
-      final signUpButton = find.text('Sign Up');
-      await tester.tap(signUpButton);
+      await tester.tap(signUpButtonText);
       await tester.pumpAndSettle();
 
       // Should navigate to sign-up page

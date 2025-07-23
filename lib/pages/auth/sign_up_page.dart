@@ -288,17 +288,21 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    'Already have an account? ',
-                    style: theme.textTheme.bodyMedium,
+                  Flexible(
+                    child: Text(
+                      'Already have an account? ',
+                      style: theme.textTheme.bodyMedium,
+                    ),
                   ),
-                  TextButton(
-                    onPressed: authState.status == AuthStatus.loading
-                        ? null
-                        : () {
-                            Navigator.of(context).pop();
-                          },
-                    child: const Text('Sign In'),
+                  Flexible(
+                    child: TextButton(
+                      onPressed: authState.status == AuthStatus.loading
+                          ? null
+                          : () {
+                              Navigator.of(context).pop();
+                            },
+                      child: const Text('Sign In'),
+                    ),
                   ),
                 ],
               ),

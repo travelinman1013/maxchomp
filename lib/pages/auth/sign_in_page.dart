@@ -226,12 +226,15 @@ class _SignInPageState extends ConsumerState<SignInPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    "Don't have an account? ",
-                    style: theme.textTheme.bodyMedium,
+                  Flexible(
+                    child: Text(
+                      "Don't have an account? ",
+                      style: theme.textTheme.bodyMedium,
+                    ),
                   ),
-                  TextButton(
-                    onPressed: authState.status == AuthStatus.loading
+                  Flexible(
+                    child: TextButton(
+                      onPressed: authState.status == AuthStatus.loading
                         ? null
                         : () {
                             Navigator.of(context).push(
@@ -240,7 +243,8 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                               ),
                             );
                           },
-                    child: const Text('Sign Up'),
+                      child: const Text('Sign Up'),
+                    ),
                   ),
                 ],
               ),

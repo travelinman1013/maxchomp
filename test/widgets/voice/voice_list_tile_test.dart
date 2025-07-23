@@ -136,9 +136,10 @@ void main() {
       // Check for semantics widgets
       expect(find.byType(Semantics), findsWidgets);
       
-      // Verify semantic structure exists
-      final semanticsNodes = tester.semantics;
-      expect(semanticsNodes, isNotEmpty);
+      // Verify semantic structure exists - Context7 Flutter testing approach
+      // Check that semantic nodes are present in the widget tree
+      final semanticsNode = tester.getSemantics(find.byType(VoiceListTile));
+      expect(semanticsNode, isNotNull);
     });
 
     testWidgets('has proper touch targets for accessibility', (tester) async {
