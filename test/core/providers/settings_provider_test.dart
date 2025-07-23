@@ -207,13 +207,14 @@ void main() {
         final notifier = container.read(settingsNotifierProvider.notifier);
         await notifier.initialize();
         
-        // Act - Update voice settings
-        await notifier.updateVoiceSettings(
-          voiceId: 'en-US-voice-1',
+        // Act - Update voice settings with VoiceSettings object
+        final voiceSettings = VoiceSettings(
+          selectedVoiceId: 'en-US-voice-1',
           speechRate: 1.5,
           volume: 0.8,
           pitch: 1.2,
         );
+        await notifier.updateVoiceSettings(voiceSettings);
         
         // Assert
         final settings = container.read(settingsNotifierProvider);
@@ -347,7 +348,7 @@ void main() {
         final voiceSettings = container.read(defaultVoiceSettingsProvider);
         
         // Assert
-        expect(voiceSettings.voiceId, equals('en-US-voice-1'));
+        expect(voiceSettings.selectedVoiceId, equals('en-US-voice-1'));
         expect(voiceSettings.speechRate, equals(1.5));
         expect(voiceSettings.volume, equals(0.8));
         expect(voiceSettings.pitch, equals(1.2));

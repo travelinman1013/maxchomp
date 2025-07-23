@@ -53,7 +53,18 @@ class SettingsNotifier extends StateNotifier<SettingsModel> {
   }
 
   /// Update voice settings
-  Future<void> updateVoiceSettings({
+  Future<void> updateVoiceSettings(VoiceSettings voiceSettings) async {
+    state = state.copyWith(
+      defaultVoiceId: voiceSettings.selectedVoiceId,
+      defaultSpeechRate: voiceSettings.speechRate,
+      defaultVolume: voiceSettings.volume,
+      defaultPitch: voiceSettings.pitch,
+    );
+    await _saveSettings();
+  }
+
+  /// Update voice settings with individual parameters (legacy method)
+  Future<void> updateVoiceSettingsLegacy({
     String? voiceId,
     double? speechRate,
     double? volume,
@@ -135,10 +146,13 @@ class SettingsNotifier extends StateNotifier<SettingsModel> {
 }
 
 /// Provider for settings state management
-final settingsNotifierProvider = StateNotifierProvider<SettingsNotifier, SettingsModel>((ref) {
+final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsModel>((ref) {
   final sharedPreferences = ref.read(sharedPreferencesProvider);
   return SettingsNotifier(sharedPreferences);
 });
+
+/// Legacy alias for backward compatibility
+final settingsNotifierProvider = settingsProvider;
 
 /// Provider to get the current theme mode
 final currentThemeModeProvider = Provider<ThemeMode>((ref) {
@@ -156,7 +170,7 @@ final isDarkModeProvider = Provider<bool>((ref) {
 final defaultVoiceSettingsProvider = Provider<VoiceSettings>((ref) {
   final settings = ref.watch(settingsNotifierProvider);
   return VoiceSettings(
-    voiceId: settings.defaultVoiceId,
+    selectedVoiceId: settings.defaultVoiceId,
     speechRate: settings.defaultSpeechRate,
     volume: settings.defaultVolume,
     pitch: settings.defaultPitch,

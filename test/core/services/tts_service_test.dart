@@ -2,9 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:maxchomp/core/services/tts_service.dart';
 import 'package:maxchomp/core/models/tts_state.dart';
+import 'package:maxchomp/core/models/audio_session_state.dart';
+import 'mock_audio_session_service.dart';
 
 import 'tts_service_test.mocks.dart';
 
@@ -13,10 +16,52 @@ void main() {
   group('TTSService', () {
     late TTSService ttsService;
     late MockFlutterTts mockFlutterTts;
+    late MockAudioSessionService mockAudioSessionService;
 
     setUp(() {
       mockFlutterTts = MockFlutterTts();
-      ttsService = TTSService(flutterTts: mockFlutterTts);
+      mockAudioSessionService = MockAudioSessionService();
+      
+      // Set up comprehensive FlutterTts mocks for all methods used
+      when(mockFlutterTts.setSpeechRate(any)).thenAnswer((_) async => 1);
+      when(mockFlutterTts.setVolume(any)).thenAnswer((_) async => 1);
+      when(mockFlutterTts.setPitch(any)).thenAnswer((_) async => 1);
+      when(mockFlutterTts.setLanguage(any)).thenAnswer((_) async => 1);
+      when(mockFlutterTts.awaitSpeakCompletion(any)).thenAnswer((_) async => 1);
+      when(mockFlutterTts.setVoice(any)).thenAnswer((_) async => 1);
+      when(mockFlutterTts.speak(any)).thenAnswer((_) async => 1);
+      when(mockFlutterTts.stop()).thenAnswer((_) async => 1);
+      when(mockFlutterTts.getVoices).thenAnswer((_) async => []);
+      when(mockFlutterTts.getDefaultVoice).thenAnswer((_) async => null);
+      when(mockFlutterTts.getLanguages).thenAnswer((_) async => ['en-US']);
+      when(mockFlutterTts.isLanguageAvailable(any)).thenAnswer((_) async => true);
+      
+      // Set up event handler stubs - we'll capture the handlers for triggering
+      VoidCallback? pauseHandler;
+      when(mockFlutterTts.setPauseHandler(any)).thenAnswer((invocation) {
+        pauseHandler = invocation.positionalArguments[0] as VoidCallback?;
+        return null;
+      });
+      
+      // Set up pause mock to trigger the pause handler
+      when(mockFlutterTts.pause()).thenAnswer((_) async {
+        // Simulate the real FlutterTts behavior by calling the pause handler
+        Future.microtask(() => pauseHandler?.call());
+        return 1;
+      });
+      
+      // Set up other handler stubs
+      when(mockFlutterTts.setStartHandler(any)).thenReturn(null);
+      when(mockFlutterTts.setCompletionHandler(any)).thenReturn(null);
+      when(mockFlutterTts.setProgressHandler(any)).thenReturn(null);
+      when(mockFlutterTts.setErrorHandler(any)).thenReturn(null);
+      when(mockFlutterTts.setCancelHandler(any)).thenReturn(null);
+      when(mockFlutterTts.setContinueHandler(any)).thenReturn(null);
+      
+      ttsService = TTSService(
+        flutterTts: mockFlutterTts,
+        audioSessionService: mockAudioSessionService,
+      );
     });
 
     group('initialization', () {
@@ -26,13 +71,6 @@ void main() {
       });
 
       test('should initialize TTS service with default settings', () async {
-        // Arrange
-        when(mockFlutterTts.setSpeechRate(any)).thenAnswer((_) async => 1);
-        when(mockFlutterTts.setVolume(any)).thenAnswer((_) async => 1);
-        when(mockFlutterTts.setPitch(any)).thenAnswer((_) async => 1);
-        when(mockFlutterTts.setLanguage(any)).thenAnswer((_) async => 1);
-        when(mockFlutterTts.awaitSpeakCompletion(any)).thenAnswer((_) async => 1);
-
         // Act
         await ttsService.initialize();
 
@@ -184,8 +222,8 @@ void main() {
 
     group('text-to-speech playback', () {
       test('should speak text successfully', () async {
-        // Arrange
-        when(mockFlutterTts.speak(any)).thenAnswer((_) async => 1);
+        // Arrange - Initialize TTS service first
+        await ttsService.initialize();
 
         // Act
         final result = await ttsService.speak('Hello, world!');
@@ -196,7 +234,8 @@ void main() {
       });
 
       test('should handle speak failure', () async {
-        // Arrange
+        // Arrange - Initialize TTS service first and set up failure
+        await ttsService.initialize();
         when(mockFlutterTts.speak(any)).thenAnswer((_) async => 0);
 
         // Act
@@ -325,6 +364,82 @@ void main() {
         expect(ttsService.currentSentence, equals('Hello world test'));
         expect(ttsService.wordStartOffset, equals(0));
         expect(ttsService.wordEndOffset, equals(5));
+      });
+    });
+
+    group('audio session integration', () {
+      test('should initialize audio session during TTS initialization', () async {
+        // Arrange
+        when(mockFlutterTts.setSpeechRate(any)).thenAnswer((_) async => 1);
+        when(mockFlutterTts.setVolume(any)).thenAnswer((_) async => 1);
+        when(mockFlutterTts.setPitch(any)).thenAnswer((_) async => 1);
+        when(mockFlutterTts.setLanguage(any)).thenAnswer((_) async => 1);
+        when(mockFlutterTts.awaitSpeakCompletion(any)).thenAnswer((_) async => 1);
+
+        // Act
+        await ttsService.initialize();
+
+        // Assert
+        expect(ttsService.isAudioSessionActive, isTrue);
+        expect(ttsService.canPlayInBackground, isTrue);
+      });
+
+      test('should check audio session state before speaking', () async {
+        // Arrange
+        await mockAudioSessionService.deactivate(); // Deactivate audio session
+        when(mockFlutterTts.speak(any)).thenAnswer((_) async => 1);
+
+        // Act
+        final result = await ttsService.speak('test text');
+
+        // Assert
+        expect(result, isFalse);
+        expect(ttsService.lastError, contains('audio session not ready'));
+        verifyNever(mockFlutterTts.speak(any));
+      });
+
+      test('should speak when audio session is active', () async {
+        // Arrange - Initialize TTS service which will initialize audio session
+        await ttsService.initialize();
+
+        // Act
+        final result = await ttsService.speak('test text');
+
+        // Assert
+        expect(result, isTrue);
+        verify(mockFlutterTts.speak('test text')).called(1);
+      });
+
+      test('should pause TTS when audio session is interrupted', () async {
+        // Arrange - Initialize TTS service to set up stream listener
+        await ttsService.initialize();
+        
+        // Set TTS to playing state
+        ttsService.onSpeechStart();
+        expect(ttsService.currentState, TTSState.playing);
+
+        // Act - simulate audio interruption
+        mockAudioSessionService.handleInterruption(true);
+
+        // Wait for stream processing and handler execution
+        await Future.delayed(Duration(milliseconds: 50));
+
+        // Assert
+        expect(ttsService.currentState, TTSState.paused);
+        verify(mockFlutterTts.pause()).called(1);
+      });
+
+      test('should expose audio session state stream', () {
+        expect(ttsService.audioSessionStateStream, isA<Stream>());
+      });
+
+      test('should report canStartPlayback based on audio session', () async {
+        // Initially should be false
+        expect(ttsService.canStartPlayback, isFalse);
+
+        // After initialization should be true
+        await ttsService.initialize();
+        expect(ttsService.canStartPlayback, isTrue);
       });
     });
 

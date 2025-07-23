@@ -170,16 +170,20 @@ class SettingsModel {
 
 /// Helper class for voice settings
 class VoiceSettings {
-  final String? voiceId;
+  final String? selectedVoiceId;
+  final String? selectedVoiceName;
+  final String? selectedVoiceLocale;
   final double speechRate;
   final double volume;
   final double pitch;
 
   const VoiceSettings({
-    this.voiceId,
-    required this.speechRate,
-    required this.volume,
-    required this.pitch,
+    this.selectedVoiceId,
+    this.selectedVoiceName,
+    this.selectedVoiceLocale,
+    this.speechRate = 1.0,
+    this.volume = 1.0,
+    this.pitch = 1.0,
   });
 
   @override
@@ -187,7 +191,9 @@ class VoiceSettings {
     if (identical(this, other)) return true;
     
     return other is VoiceSettings &&
-        other.voiceId == voiceId &&
+        other.selectedVoiceId == selectedVoiceId &&
+        other.selectedVoiceName == selectedVoiceName &&
+        other.selectedVoiceLocale == selectedVoiceLocale &&
         other.speechRate == speechRate &&
         other.volume == volume &&
         other.pitch == pitch;
@@ -195,11 +201,18 @@ class VoiceSettings {
 
   @override
   int get hashCode {
-    return Object.hash(voiceId, speechRate, volume, pitch);
+    return Object.hash(
+      selectedVoiceId, 
+      selectedVoiceName, 
+      selectedVoiceLocale, 
+      speechRate, 
+      volume, 
+      pitch,
+    );
   }
 
   @override
   String toString() {
-    return 'VoiceSettings(voiceId: $voiceId, speechRate: $speechRate, volume: $volume, pitch: $pitch)';
+    return 'VoiceSettings(selectedVoiceId: $selectedVoiceId, selectedVoiceName: $selectedVoiceName, selectedVoiceLocale: $selectedVoiceLocale, speechRate: $speechRate, volume: $volume, pitch: $pitch)';
   }
 }

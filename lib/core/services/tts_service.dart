@@ -2,10 +2,13 @@ import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:maxchomp/core/models/tts_state.dart';
 import 'package:maxchomp/core/models/voice_model.dart';
+import 'package:maxchomp/core/services/audio_session_service.dart';
+import 'package:maxchomp/core/models/audio_session_state.dart';
 
 /// Service for managing Text-to-Speech functionality using flutter_tts
 class TTSService {
   final FlutterTts _flutterTts;
+  final AudioSessionService _audioSessionService;
   
   // State management
   TTSState _currentState = TTSState.stopped;
@@ -28,8 +31,12 @@ class TTSService {
   final StreamController<TTSState> _stateController = StreamController<TTSState>.broadcast();
   final StreamController<String> _progressController = StreamController<String>.broadcast();
   
-  /// Creates a new TTSService instance with optional FlutterTts instance for testing
-  TTSService({FlutterTts? flutterTts}) : _flutterTts = flutterTts ?? FlutterTts();
+  /// Creates a new TTSService instance with optional dependencies for testing
+  TTSService({
+    FlutterTts? flutterTts,
+    AudioSessionService? audioSessionService,
+  }) : _flutterTts = flutterTts ?? FlutterTts(),
+       _audioSessionService = audioSessionService ?? AudioSessionService();
   
   // Getters
   TTSState get currentState => _currentState;
@@ -44,12 +51,22 @@ class TTSService {
   int get wordEndOffset => _wordEndOffset;
   String get lastError => _lastError;
   
+  // Audio session properties
+  AudioSessionState get audioSessionState => _audioSessionService.currentState;
+  bool get canPlayInBackground => _audioSessionService.canPlayInBackground;
+  bool get isAudioSessionActive => _audioSessionService.isActive;
+  
   // Streams
   Stream<TTSState> get stateStream => _stateController.stream;
   Stream<String> get progressStream => _progressController.stream;
+  Stream<AudioSessionState> get audioSessionStateStream => _audioSessionService.stateStream;
   
   /// Initializes the TTS service with default settings and event handlers
   Future<void> initialize() async {
+    // Initialize audio session first for background playback capability
+    await _audioSessionService.initialize();
+    await _audioSessionService.configureForBackgroundPlayback();
+    
     await _flutterTts.setSpeechRate(_currentSpeechRate);
     await _flutterTts.setVolume(_currentVolume);
     await _flutterTts.setPitch(_currentPitch);
@@ -66,6 +83,9 @@ class TTSService {
     _flutterTts.setCancelHandler(() => onSpeechCancel(''));
     _flutterTts.setPauseHandler(() => onSpeechPause());
     _flutterTts.setContinueHandler(() => onSpeechContinue());
+    
+    // Listen to audio session interruptions
+    _audioSessionService.stateStream.listen(_handleAudioSessionChange);
     
     _isInitialized = true;
   }
@@ -110,8 +130,13 @@ class TTSService {
     await _flutterTts.setPitch(clampedPitch);
   }
   
-  /// Speaks the given text
+  /// Speaks the given text with audio session validation
   Future<bool> speak(String text) async {
+    if (!canStartPlayback) {
+      _lastError = 'Cannot start playback: audio session not ready';
+      return false;
+    }
+    
     final result = await _flutterTts.speak(text);
     return result == 1;
   }
@@ -190,10 +215,38 @@ class TTSService {
     _progressController.add(word);
   }
   
+  /// Handles audio session state changes (interruptions, route changes)
+  void _handleAudioSessionChange(AudioSessionState state) {
+    switch (state) {
+      case AudioSessionState.interrupted:
+        // Pause TTS when audio session is interrupted (phone call, etc.)
+        if (_currentState == TTSState.playing) {
+          pause();
+        }
+        break;
+      case AudioSessionState.active:
+        // Audio session resumed - could optionally resume playback here
+        // For now, user will need to manually resume
+        break;
+      case AudioSessionState.error:
+        // Handle audio session errors
+        if (_currentState == TTSState.playing) {
+          stop();
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  
+  /// Checks if TTS can start playback (audio session is ready)
+  bool get canStartPlayback => _isInitialized && _audioSessionService.isActive;
+  
   /// Disposes of resources and stops any ongoing speech
   Future<void> dispose() async {
     await _flutterTts.stop();
     _currentState = TTSState.stopped;
+    await _audioSessionService.dispose();
     await _stateController.close();
     await _progressController.close();
   }
