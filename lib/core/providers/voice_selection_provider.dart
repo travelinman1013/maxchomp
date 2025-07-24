@@ -3,6 +3,8 @@ import 'package:maxchomp/core/models/voice_model.dart';
 import 'package:maxchomp/core/services/tts_service.dart';
 import 'package:maxchomp/core/providers/settings_provider.dart';
 import 'package:maxchomp/core/providers/tts_provider.dart';
+import 'package:maxchomp/core/providers/remote_config_provider.dart';
+import 'package:maxchomp/core/providers/analytics_provider.dart';
 import 'package:maxchomp/core/models/settings_model.dart';
 
 // Voice Selection State
@@ -95,9 +97,15 @@ class VoiceSelectionNotifierState {
 class VoiceSelectionNotifier extends StateNotifier<VoiceSelectionNotifierState> {
   final TTSService _ttsService;
   final SettingsNotifier _settingsNotifier;
+  final AnalyticsService _analytics;
+  final Ref _ref;
 
-  VoiceSelectionNotifier(this._ttsService, this._settingsNotifier)
-      : super(const VoiceSelectionNotifierState(
+  VoiceSelectionNotifier(
+    this._ttsService, 
+    this._settingsNotifier, 
+    this._analytics,
+    this._ref,
+  ) : super(const VoiceSelectionNotifierState(
           voiceSelectionState: VoiceSelectionState.loading(),
         )) {
     loadVoices();
@@ -122,6 +130,14 @@ class VoiceSelectionNotifier extends StateNotifier<VoiceSelectionNotifierState> 
 
   Future<void> selectVoice(VoiceModel voice) async {
     try {
+      // Track voice selection analytics
+      await _analytics.trackVoiceSelection(
+        action: 'selected',
+        voiceId: voice.identifier,
+        voiceName: voice.name,
+        voiceLocale: voice.locale,
+      );
+
       await _ttsService.setVoice(voice.name, voice.locale);
       
       // Update state
@@ -143,6 +159,21 @@ class VoiceSelectionNotifier extends StateNotifier<VoiceSelectionNotifierState> 
 
   Future<void> previewVoice(VoiceModel voice, {String? previewText}) async {
     try {
+      // Check if voice preview is enabled via remote config
+      final isVoicePreviewEnabled = _ref.read(isVoicePreviewEnabledRemoteProvider);
+      if (!isVoicePreviewEnabled) {
+        return; // Preview disabled via remote config
+      }
+
+      // Track voice preview analytics
+      await _analytics.trackVoiceSelection(
+        action: 'preview_played',
+        voiceId: voice.identifier,
+        voiceName: voice.name,
+        voiceLocale: voice.locale,
+        isPreview: true,
+      );
+
       // Stop current preview if any
       if (state.previewingVoice != null) {
         await _ttsService.stop();
@@ -180,8 +211,12 @@ class VoiceSelectionNotifier extends StateNotifier<VoiceSelectionNotifierState> 
 final voiceSelectionProvider = StateNotifierProvider<VoiceSelectionNotifier, VoiceSelectionNotifierState>((ref) {
   final ttsService = ref.watch(ttsServiceProvider);
   final settingsNotifier = ref.watch(settingsProvider.notifier);
+  final analytics = ref.watch(analyticsProvider);
   
-  return VoiceSelectionNotifier(ttsService, settingsNotifier);
+  // Track voice selection opened analytics
+  analytics.trackVoiceSelection(action: 'opened');
+  
+  return VoiceSelectionNotifier(ttsService, settingsNotifier, analytics, ref);
 });
 
 // Helper providers for easy access
@@ -195,4 +230,22 @@ final selectedVoiceProvider = Provider<VoiceModel?>((ref) {
 
 final previewingVoiceProvider = Provider<VoiceModel?>((ref) {
   return ref.watch(voiceSelectionProvider).previewingVoice;
+});
+
+/// Provider that combines local settings with remote config for voice preview
+final effectiveVoicePreviewEnabledProvider = Provider<bool>((ref) {
+  final localSetting = ref.watch(isVoicePreviewEnabledProvider);
+  final remoteSetting = ref.watch(isVoicePreviewEnabledRemoteProvider);
+  
+  // Remote config can disable the feature, but if remote allows it, defer to local setting
+  return remoteSetting && localSetting;
+});
+
+/// Provider for effective speech rate with remote config limits
+final effectiveSpeechRateProvider = Provider<double>((ref) {
+  final localRate = ref.watch(settingsProvider).defaultSpeechRate;
+  final limits = ref.watch(speechRateLimitsProvider);
+  
+  // Clamp the local rate within remote config limits
+  return localRate.clamp(limits.min, limits.max);
 });

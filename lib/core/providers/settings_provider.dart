@@ -143,6 +143,12 @@ class SettingsNotifier extends StateNotifier<SettingsModel> {
       enableVoicePreview: !state.enableVoicePreview,
     );
   }
+
+  /// Import settings from a complete SettingsModel
+  Future<void> importSettings(SettingsModel settings) async {
+    state = settings;
+    await _saveSettings();
+  }
 }
 
 /// Provider for settings state management

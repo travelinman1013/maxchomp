@@ -4,6 +4,7 @@ import 'package:maxchomp/core/services/tts_service.dart';
 import 'package:maxchomp/core/models/tts_state.dart';
 import 'package:maxchomp/core/models/tts_models.dart';
 import 'package:maxchomp/core/models/voice_model.dart';
+import 'package:maxchomp/core/providers/analytics_provider.dart';
 
 /// Provider for the TTS service instance
 final ttsServiceProvider = Provider<TTSService>((ref) {
@@ -13,9 +14,10 @@ final ttsServiceProvider = Provider<TTSService>((ref) {
 /// State notifier for TTS playback state
 class TTSStateNotifier extends StateNotifier<TTSStateModel> {
   final TTSService _ttsService;
+  final AnalyticsService _analytics;
   StreamSubscription<TTSState>? _stateSubscription;
 
-  TTSStateNotifier(this._ttsService)
+  TTSStateNotifier(this._ttsService, this._analytics)
       : super(TTSStateModel(
           status: _ttsService.currentState,
           isInitialized: _ttsService.isInitialized,
@@ -26,7 +28,31 @@ class TTSStateNotifier extends StateNotifier<TTSStateModel> {
         status: ttsState,
         error: ttsState == TTSState.error ? _ttsService.lastError : null,
       );
+      
+      // Track TTS state changes
+      _trackTTSStateChange(ttsState);
     });
+  }
+
+  /// Track TTS state changes in analytics
+  void _trackTTSStateChange(TTSState ttsState) {
+    switch (ttsState) {
+      case TTSState.playing:
+        _analytics.trackTTSPlayback(action: 'started');
+        break;
+      case TTSState.paused:
+        _analytics.trackTTSPlayback(action: 'paused');
+        break;
+      case TTSState.stopped:
+        _analytics.trackTTSPlayback(action: 'stopped');
+        break;
+      case TTSState.loading:
+        _analytics.trackTTSPlayback(action: 'loading');
+        break;
+      case TTSState.error:
+        _analytics.trackTTSPlayback(action: 'error');
+        break;
+    }
   }
 
   /// Initialize the TTS service
@@ -109,20 +135,29 @@ class TTSStateNotifier extends StateNotifier<TTSStateModel> {
 final ttsStateNotifierProvider =
     StateNotifierProvider<TTSStateNotifier, TTSStateModel>((ref) {
   final ttsService = ref.read(ttsServiceProvider);
-  return TTSStateNotifier(ttsService);
+  final analytics = ref.read(analyticsProvider);
+  return TTSStateNotifier(ttsService, analytics);
 });
 
 /// State notifier for TTS settings
 class TTSSettingsNotifier extends StateNotifier<TTSSettingsModel> {
   final TTSService _ttsService;
+  final AnalyticsService _analytics;
 
-  TTSSettingsNotifier(this._ttsService) : super(TTSSettingsModel.defaultSettings);
+  TTSSettingsNotifier(this._ttsService, this._analytics) : super(TTSSettingsModel.defaultSettings);
 
   /// Update speech rate
   Future<void> updateSpeechRate(double rate) async {
     try {
+      final oldRate = state.speechRate;
       await _ttsService.setSpeechRate(rate);
       state = state.copyWith(speechRate: _ttsService.currentSpeechRate);
+      
+      // Track speech rate change
+      _analytics.trackTTSPlayback(
+        action: 'speed_changed',
+        speechRate: rate,
+      );
     } catch (e) {
       // Handle error silently or emit to error stream
     }
@@ -173,7 +208,8 @@ class TTSSettingsNotifier extends StateNotifier<TTSSettingsModel> {
 final ttsSettingsNotifierProvider =
     StateNotifierProvider<TTSSettingsNotifier, TTSSettingsModel>((ref) {
   final ttsService = ref.read(ttsServiceProvider);
-  return TTSSettingsNotifier(ttsService);
+  final analytics = ref.read(analyticsProvider);
+  return TTSSettingsNotifier(ttsService, analytics);
 });
 
 /// Provider for available voices

@@ -5,6 +5,7 @@ import '../core/providers/settings_provider.dart';
 import '../core/providers/user_profiles_provider.dart';
 import '../core/models/settings_model.dart';
 import '../core/widgets/settings_backup_dialogs.dart';
+import '../core/widgets/profile_management_dialogs.dart';
 
 /// Material 3 Settings Page for MaxChomp
 /// 
@@ -509,23 +510,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   /// Show create profile dialog with Material 3 design
   void _showCreateProfileDialog(BuildContext context) {
-    // TODO: Implement create profile dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Create profile dialog - Coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    ProfileManagementDialogs.showCreateProfileDialog(context, ref);
   }
 
   /// Show manage profiles dialog with Material 3 design
   void _showManageProfilesDialog(BuildContext context) {
-    // TODO: Implement manage profiles dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Manage profiles dialog - Coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    ProfileManagementDialogs.showManageProfilesDialog(context, ref);
   }
 }

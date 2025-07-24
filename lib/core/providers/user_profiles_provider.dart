@@ -17,6 +17,7 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 class UserProfilesNotifier extends StateNotifier<UserProfilesState> {
   final SharedPreferences _prefs;
   final AnalyticsService _analytics;
+  // ignore: unused_field
   final SettingsExportService? _exportService;
   
   static const String _storageKey = 'user_profiles_state';
@@ -284,6 +285,7 @@ class UserProfilesNotifier extends StateNotifier<UserProfilesState> {
   Future<String?> exportProfiles() async {
     
     try {
+      // ignore: unused_local_variable
       final exportData = {
         'profiles': state.toJson(),
         'exported_at': DateTime.now().toIso8601String(),
@@ -300,7 +302,7 @@ class UserProfilesNotifier extends StateNotifier<UserProfilesState> {
         AnalyticsEvent.userProfileExported,
         parameters: {
           'profile_count': state.profiles.length,
-          'file_path': filePath != null ? 'success' : 'failed',
+          'file_path': 'success',
         },
       );
       

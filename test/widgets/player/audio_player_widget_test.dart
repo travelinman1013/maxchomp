@@ -1,23 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockito/mockito.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 import 'package:maxchomp/core/models/tts_state.dart';
 import 'package:maxchomp/core/models/tts_models.dart';
 import 'package:maxchomp/core/providers/tts_provider.dart';
 import 'package:maxchomp/core/services/tts_service.dart';
 import 'package:maxchomp/widgets/player/audio_player_widget.dart';
+import 'package:maxchomp/core/providers/analytics_provider.dart';
 
-// Mock classes for testing
+// Mock services for testing following Context7 patterns
+
+class MockTTSService extends TTSService {
+  @override
+  TTSState get currentState => TTSState.stopped;
+  
+  @override
+  bool get isInitialized => true;
+  
+  @override
+  Stream<TTSState> get stateStream => Stream.value(TTSState.stopped);
+  
+  @override
+  Stream<String> get progressStream => const Stream.empty();
+}
+
+class MockFirebaseAnalytics extends Mock implements FirebaseAnalytics {}
+
+class MockAnalyticsService extends Mock implements AnalyticsService {
+  MockAnalyticsService() : super();
+  
+  @override
+  Future<void> trackTTSPlayback({
+    required String action,
+    String? documentId,
+    String? voiceId,
+    double? speechRate,
+    double? volume,
+    double? pitch,
+    int? currentPosition,
+    int? totalDuration,
+  }) async {
+    // Mock implementation - do nothing
+  }
+}
+
+// Mock notifiers for testing using Context7 Riverpod patterns
 class MockTTSStateNotifier extends TTSStateNotifier {
   MockTTSStateNotifier([TTSStateModel? initialState]) 
-    : super(_mockTTSService) {
+    : super(MockTTSService(), MockAnalyticsService()) {
     if (initialState != null) {
       state = initialState;
     }
   }
-  
-  static final _mockTTSService = TTSService();
   
   @override
   set state(TTSStateModel value) => super.state = value;
@@ -25,13 +62,11 @@ class MockTTSStateNotifier extends TTSStateNotifier {
 
 class MockTTSProgressNotifier extends TTSProgressNotifier {
   MockTTSProgressNotifier([TTSProgressModel? initialState]) 
-    : super(_mockTTSService) {
+    : super(MockTTSService()) {
     if (initialState != null) {
       state = initialState;
     }
   }
-  
-  static final _mockTTSService = TTSService();
   
   @override
   set state(TTSProgressModel value) => super.state = value;
@@ -39,13 +74,11 @@ class MockTTSProgressNotifier extends TTSProgressNotifier {
 
 class MockTTSSettingsNotifier extends TTSSettingsNotifier {
   MockTTSSettingsNotifier([TTSSettingsModel? initialState]) 
-    : super(_mockTTSService) {
+    : super(MockTTSService(), MockAnalyticsService()) {
     if (initialState != null) {
       state = initialState;
     }
   }
-  
-  static final _mockTTSService = TTSService();
   
   @override
   set state(TTSSettingsModel value) => super.state = value;

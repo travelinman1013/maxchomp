@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:maxchomp/pages/settings_page.dart';
 import 'package:maxchomp/core/providers/settings_provider.dart';
 import 'package:maxchomp/core/models/settings_model.dart';
+import 'package:maxchomp/core/services/settings_export_service.dart';
+import 'package:maxchomp/core/providers/settings_export_provider.dart';
 
 import 'settings_page_test.mocks.dart';
 
@@ -24,13 +26,15 @@ class TestSettingsNotifier extends SettingsNotifier {
   }
 }
 
-@GenerateMocks([SharedPreferences])
+@GenerateMocks([SharedPreferences, SettingsExportService])
 void main() {
   group('Settings Page Tests', () {
     late MockSharedPreferences mockSharedPreferences;
+    late MockSettingsExportService mockExportService;
 
     setUp(() {
       mockSharedPreferences = MockSharedPreferences();
+      mockExportService = MockSettingsExportService();
       
       // Mock default behavior with valid settings JSON
       const defaultSettingsJson = '{"isDarkMode": false, "defaultSpeechRate": 1.0, "defaultVolume": 1.0, "defaultPitch": 1.0, "enableBackgroundPlayback": true, "enableHapticFeedback": true, "enableVoicePreview": true, "defaultThemeMode": "system"}';
@@ -53,6 +57,7 @@ void main() {
       return ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(mockSharedPreferences),
+          settingsExportServiceProvider.overrideWithValue(mockExportService),
           // Override the settings notifier provider with a pre-initialized state
           settingsNotifierProvider.overrideWith((ref) {
             // Create a test-specific notifier that's already initialized
@@ -294,6 +299,109 @@ void main() {
         expect(updatedSwitch.value, isFalse);
         
         verify(mockSharedPreferences.setString('settings', any)).called(1);
+      });
+    });
+
+    group('Data & Backup Settings', () {
+      testWidgets('should display data & backup section', (tester) async {
+        // Act
+        await pumpAndSettle(tester, createTestWidget());
+
+        // Assert - Check for Data & Backup section without forcing visibility
+        expect(find.text('Data & Backup'), findsOneWidget);
+      });
+
+      testWidgets('should display export settings option', (tester) async {
+        // Act
+        await pumpAndSettle(tester, createTestWidget());
+
+        // Scroll to make the section visible
+        await tester.scrollUntilVisible(
+          find.text('Export Settings'),
+          500.0,
+          scrollable: find.byType(ListView),
+        );
+
+        // Assert - Check for export settings tile
+        expect(find.text('Export Settings'), findsOneWidget);
+        expect(find.text('Save settings to backup file'), findsOneWidget);
+        expect(find.byIcon(Icons.backup), findsOneWidget);
+      });
+
+      testWidgets('should display import settings option', (tester) async {
+        // Act
+        await pumpAndSettle(tester, createTestWidget());
+
+        // Scroll to make the section visible
+        await tester.scrollUntilVisible(
+          find.text('Import Settings'),
+          500.0,
+          scrollable: find.byType(ListView),
+        );
+
+        // Assert - Check for import settings tile
+        expect(find.text('Import Settings'), findsOneWidget);
+        expect(find.text('Restore settings from backup file'), findsOneWidget);
+        expect(find.byIcon(Icons.restore), findsOneWidget);
+      });
+
+      testWidgets('should show export dialog when export tile is tapped', (tester) async {
+        // Act
+        await pumpAndSettle(tester, createTestWidget());
+
+        // Scroll to make the tile visible and tap it
+        await tester.scrollUntilVisible(
+          find.text('Export Settings'),
+          500.0,
+          scrollable: find.byType(ListView),
+        );
+        await tester.tap(find.text('Export Settings'));
+        await tester.pumpAndSettle();
+
+        // Assert - Check for export dialog
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.text('Export Settings'), findsAtLeastNWidgets(1)); // One in title, one in tile
+      });
+
+      testWidgets('should show import dialog when import tile is tapped', (tester) async {
+        // Act
+        await pumpAndSettle(tester, createTestWidget());
+
+        // Scroll to make the tile visible and tap it
+        await tester.scrollUntilVisible(
+          find.text('Import Settings'),
+          500.0,
+          scrollable: find.byType(ListView),
+        );
+        await tester.tap(find.text('Import Settings'));
+        await tester.pumpAndSettle();
+
+        // Assert - Check for import dialog
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.text('Import Settings'), findsAtLeastNWidgets(1)); // One in title, one in tile
+      });
+
+      testWidgets('should use correct Material 3 styling for export/import tiles', (tester) async {
+        // Act
+        await pumpAndSettle(tester, createTestWidget());
+
+        // Scroll to make the tiles visible
+        await tester.scrollUntilVisible(
+          find.text('Export Settings'),
+          500.0,
+          scrollable: find.byType(ListView),
+        );
+
+        // Assert - Check for ListTiles with proper styling
+        expect(find.byType(ListTile), findsAtLeastNWidgets(2));
+        
+        // Check for trailing arrows (scroll to see import settings too)
+        await tester.scrollUntilVisible(
+          find.text('Import Settings'),
+          500.0,
+          scrollable: find.byType(ListView),
+        );
+        expect(find.byIcon(Icons.arrow_forward_ios), findsAtLeastNWidgets(2));
       });
     });
 

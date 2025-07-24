@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/tts_provider.dart';
+import '../providers/remote_config_provider.dart';
+import '../providers/analytics_provider.dart';
+import '../providers/settings_provider.dart';
 
 /// Widget that initializes app services and shows a loading screen
 /// 
@@ -30,11 +33,13 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
   
   Future<void> _initializeServices() async {
     try {
-      // Initialize TTS service
-      final ttsNotifier = ref.read(ttsStateNotifierProvider.notifier);
-      await ttsNotifier.initialize();
-      
-      // Add any other service initializations here
+      // Initialize services concurrently for better performance
+      await Future.wait([
+        _initializeTTS(),
+        _initializeRemoteConfig(),
+        _initializeAnalytics(),
+        _initializeSettings(),
+      ]);
       
       if (mounted) {
         setState(() {
@@ -48,6 +53,30 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
         });
       }
     }
+  }
+
+  Future<void> _initializeTTS() async {
+    final ttsNotifier = ref.read(ttsStateNotifierProvider.notifier);
+    await ttsNotifier.initialize();
+  }
+
+  Future<void> _initializeRemoteConfig() async {
+    // Remote config initializes automatically when first accessed
+    // We just need to trigger it by reading the provider
+    ref.read(remoteConfigProvider);
+  }
+
+  Future<void> _initializeAnalytics() async {
+    final analytics = ref.read(analyticsProvider);
+    await analytics.initialize();
+    
+    // Track app launch
+    await analytics.trackAppLifecycle(event: 'launched');
+  }
+
+  Future<void> _initializeSettings() async {
+    final settingsNotifier = ref.read(settingsProvider.notifier);
+    await settingsNotifier.initialize();
   }
   
   @override

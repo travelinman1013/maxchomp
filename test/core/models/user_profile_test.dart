@@ -18,10 +18,9 @@ void main() {
         pitch: 1.2,
         language: 'en-US',
         selectedVoice: VoiceModel(
-          id: 'test-voice',
           name: 'Test Voice',
-          language: 'en-US',
-          quality: VoiceQuality.enhanced,
+          locale: 'en-US',
+          quality: 'enhanced',
         ),
       );
     });

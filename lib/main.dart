@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:maxchomp/core/services/firebase_service.dart';
 import 'package:maxchomp/core/theme/app_theme.dart';
 import 'package:maxchomp/core/widgets/auth_wrapper.dart';
 import 'package:maxchomp/core/widgets/app_initializer.dart';
+import 'package:maxchomp/core/providers/settings_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,8 +13,14 @@ void main() async {
   // Initialize Firebase
   await FirebaseService.initialize();
   
-  runApp(const ProviderScope(
-    child: MaxChompApp(),
+  // Initialize SharedPreferences
+  final sharedPreferences = await SharedPreferences.getInstance();
+  
+  runApp(ProviderScope(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+    ],
+    child: const MaxChompApp(),
   ));
 }
 

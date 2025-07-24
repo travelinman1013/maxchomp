@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/pdf_document.dart';
 import '../services/pdf_import_service.dart';
+import '../providers/analytics_provider.dart';
 
 /// State for PDF import operations
 class PDFImportState {
@@ -42,17 +43,34 @@ final pdfImportServiceProvider = Provider<PDFImportService>((ref) {
 /// StateNotifier for managing PDF import operations
 class PDFImportNotifier extends StateNotifier<PDFImportState> {
   final PDFImportService _importService;
+  final AnalyticsService _analytics;
 
-  PDFImportNotifier(this._importService) : super(const PDFImportState());
+  PDFImportNotifier(this._importService, this._analytics) : super(const PDFImportState());
 
   /// Import a single PDF file
   Future<PDFDocument?> importSinglePDF() async {
+    final startTime = DateTime.now();
+    
+    // Track import started
+    await _analytics.trackPDFImport(status: 'started');
+    
     state = state.copyWith(isImporting: true, errorMessage: null);
 
     try {
       final document = await _importService.pickAndImportPDF();
       
       if (document != null) {
+        final processingTime = DateTime.now().difference(startTime).inMilliseconds / 1000.0;
+        
+        // Track successful import
+        await _analytics.trackPDFImport(
+          status: 'completed',
+          fileName: document.fileName,
+          fileSizeBytes: document.fileSize,
+          pageCount: document.totalPages,
+          processingTimeSeconds: processingTime,
+        );
+        
         final updatedDocuments = [...state.importedDocuments, document];
         state = state.copyWith(
           isImporting: false,
@@ -65,6 +83,15 @@ class PDFImportNotifier extends StateNotifier<PDFImportState> {
         return null;
       }
     } catch (e) {
+      final processingTime = DateTime.now().difference(startTime).inMilliseconds / 1000.0;
+      
+      // Track failed import
+      await _analytics.trackPDFImport(
+        status: 'failed',
+        processingTimeSeconds: processingTime,
+        errorMessage: e.toString(),
+      );
+      
       state = state.copyWith(
         isImporting: false,
         errorMessage: e.toString(),
@@ -115,5 +142,6 @@ class PDFImportNotifier extends StateNotifier<PDFImportState> {
 /// Provider for PDF import state notifier
 final pdfImportProvider = StateNotifierProvider<PDFImportNotifier, PDFImportState>((ref) {
   final importService = ref.watch(pdfImportServiceProvider);
-  return PDFImportNotifier(importService);
+  final analytics = ref.watch(analyticsProvider);
+  return PDFImportNotifier(importService, analytics);
 });

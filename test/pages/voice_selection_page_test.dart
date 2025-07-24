@@ -9,9 +9,13 @@ import 'package:maxchomp/core/theme/app_theme.dart';
 import 'package:mockito/mockito.dart';
 import 'package:maxchomp/core/services/tts_service.dart';
 import 'package:maxchomp/core/providers/settings_provider.dart';
+import 'package:maxchomp/core/providers/analytics_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MockTTSService extends Mock implements TTSService {}
 class MockSettingsNotifier extends Mock implements SettingsNotifier {}
+class MockAnalyticsService extends Mock implements AnalyticsService {}
+class MockRef extends Mock implements Ref {}
 
 void main() {
   group('VoiceSelectionPage Widget Tests', () {
@@ -305,7 +309,7 @@ class TestVoiceSelectionNotifier extends VoiceSelectionNotifier {
     VoiceSelectionState initialState,
     VoiceModel? selectedVoice, {
     this.previewingVoice,
-  }) : super(MockTTSService(), MockSettingsNotifier()) {
+  }) : super(MockTTSService(), MockSettingsNotifier(), MockAnalyticsService(), MockRef()) {
     state = VoiceSelectionNotifierState(
       voiceSelectionState: initialState,
       selectedVoice: selectedVoice,

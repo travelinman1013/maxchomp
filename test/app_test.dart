@@ -12,14 +12,18 @@ import 'package:maxchomp/core/models/tts_state.dart';
 import 'package:maxchomp/core/models/tts_models.dart';
 import 'package:maxchomp/core/models/auth_state.dart';
 import 'package:maxchomp/pages/auth/sign_in_page.dart';
+import 'package:maxchomp/core/providers/analytics_provider.dart';
 
 // Use existing mocks
 import 'core/providers/auth_provider_test.mocks.dart';
 import 'core/providers/tts_provider_test.mocks.dart';
 
+/// Simple mock analytics service for testing
+class MockAnalyticsService extends Mock implements AnalyticsService {}
+
 /// Mock implementation of TTSStateNotifier for testing
 class MockTTSStateNotifier extends TTSStateNotifier {
-  MockTTSStateNotifier(super.ttsService);
+  MockTTSStateNotifier(super.ttsService, super.analytics);
 
   @override
   Future<void> initialize() async {
@@ -80,7 +84,8 @@ void main() {
       when(mockTTSService.progressStream).thenAnswer((_) => Stream<String>.empty());
 
       // Create mock TTS state notifier with mocked service
-      mockTTSStateNotifier = MockTTSStateNotifier(mockTTSService);
+      final mockAnalyticsService = MockAnalyticsService();
+      mockTTSStateNotifier = MockTTSStateNotifier(mockTTSService, mockAnalyticsService);
     });
 
     tearDown(() {
